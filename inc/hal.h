@@ -19,22 +19,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 SPDX-License-Identifier: MIT
 *************************************************************************************************/
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef HAL_H
+#define HAL_H
 
-/**
- * @file main.h
- * @brief Declarations and configurations for the main program.
- *
- * This header file contains the declarations, macros, and configuration settings
- * required by the main program. It provides an interface for initializing hardware
- * components and managing global resources used in the main application.
- *
- * @author Juan Manuel Guariste
- * @date 20/11/2024
- */
+/** @file hal.h
+ ** @brief Definición de la función principal del programa
+ **/
 
 /* === Headers files inclusions ================================================================ */
+#include <stdint.h>
+#include <stdbool.h>
 
 /* === Cabecera C++ ============================================================================ */
 
@@ -50,17 +44,11 @@ extern "C" {
 
 /* === Public function declarations ============================================================ */
 
-/**
- * @brief Main function of the system, executed at program startup.
- *
- * This function serves as the entry point of the program. It initializes the hardware,
- * configures necessary peripherals, and runs the main application loop. The function
- * should return zero if everything operates correctly, or a negative value if an error
- * occurs during initialization or execution.
- *
- * @return int Return value: zero if successful, negative value if an error occurs.
- */
-int main(void);
+void hal_gpio_set_direction(uint8_t port, uint8_t bit, bool output);
+
+void hal_gpio_set_output(uint8_t port, uint8_t bit, bool active);
+
+bool hal_gpio_get_input(uint8_t port, uint8_t bit);
 
 /* === End of documentation ==================================================================== */
 
@@ -68,4 +56,4 @@ int main(void);
 }
 #endif
 
-#endif /* MAIN_H */
+#endif /* HAL_H */

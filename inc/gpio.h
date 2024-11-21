@@ -19,22 +19,24 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 SPDX-License-Identifier: MIT
 *************************************************************************************************/
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef GPIO_H
+#define GPIO_H
 
 /**
- * @file main.h
- * @brief Declarations and configurations for the main program.
+ * @file gpio.h
+ * @brief Declarations for the GPIO module.
  *
- * This header file contains the declarations, macros, and configuration settings
- * required by the main program. It provides an interface for initializing hardware
- * components and managing global resources used in the main application.
+ * This file contains the declarations for the GPIO module, including functions,
+ * data types, and macros for managing GPIO pins. It provides an interface
+ * for creating, configuring, and controlling GPIO objects in an embedded system.
  *
  * @author Juan Manuel Guariste
  * @date 20/11/2024
  */
 
 /* === Headers files inclusions ================================================================ */
+#include <stdint.h>
+#include <stdbool.h>
 
 /* === Cabecera C++ ============================================================================ */
 
@@ -46,21 +48,59 @@ extern "C" {
 
 /* === Public data type declarations =========================================================== */
 
+/**
+ * @brief Typedef for a pointer to a GPIO object.
+ *
+ * This typedef defines a pointer to a structure representing a GPIO object.
+ */
+typedef struct gpio_s * gpio_t;
+
 /* === Public variable declarations ============================================================ */
 
 /* === Public function declarations ============================================================ */
 
 /**
- * @brief Main function of the system, executed at program startup.
+ * @brief Creates a GPIO instance.
  *
- * This function serves as the entry point of the program. It initializes the hardware,
- * configures necessary peripherals, and runs the main application loop. The function
- * should return zero if everything operates correctly, or a negative value if an error
- * occurs during initialization or execution.
+ * This function initializes a structure to represent a GPIO, allocating
+ * the required memory either dynamically or statically, depending on the configuration.
  *
- * @return int Return value: zero if successful, negative value if an error occurs.
+ * @param port GPIO port number.
+ * @param bit Pin number within the port.
+ * @return gpio_t A reference to the created GPIO instance, or NULL if the creation fails.
  */
-int main(void);
+gpio_t gpioCreate(uint8_t port, uint8_t bit);
+
+/**
+ * @brief Configures the direction of a GPIO.
+ *
+ * This function sets whether a GPIO should operate as an input or an output.
+ *
+ * @param self GPIO instance to configure.
+ * @param io `true` to configure as output, `false` to configure as input.
+ */
+void gpioSetDirection(gpio_t self, bool io);
+
+/**
+ * @brief Sets the logical state of a GPIO configured as output.
+ *
+ * This function changes the state of a GPIO to high or low,
+ * provided it is configured as an output.
+ *
+ * @param self GPIO instance.
+ * @param state `true` for high level, `false` for low level.
+ */
+void gpioSetState(gpio_t gpio, bool state);
+
+/**
+ * @brief Gets the logical state of a GPIO configured as input.
+ *
+ * This function reads the current state (high or low) of a GPIO configured as input.
+ *
+ * @param self GPIO instance.
+ * @return `true` if the GPIO is at a high level, `false` if it is at a low level.
+ */
+bool gpioGetState(gpio_t gpio);
 
 /* === End of documentation ==================================================================== */
 
@@ -68,4 +108,4 @@ int main(void);
 }
 #endif
 
-#endif /* MAIN_H */
+#endif /* GPIO_H */

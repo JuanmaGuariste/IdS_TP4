@@ -20,12 +20,12 @@ SPDX-License-Identifier: MIT
 *************************************************************************************************/
 
 /**
- * @file main.c
- * @brief Definition of the main function of the program.
+ * @file gpio.c
+ * @brief Implementation of the GPIO module functions.
  *
- * This file contains the implementation of the main entry point for the program.
- * It initializes the necessary hardware and manages the main application loop
- * to handle GPIO functionality, such as controlling an LED based on button input.
+ * This file contains the definitions and implementations of the functions
+ * for managing GPIO objects, including initialization, setting direction,
+ * and controlling the state of GPIO pins.
  *
  * @author Juan Manuel Guariste
  * @date 20/11/2024
@@ -33,19 +33,32 @@ SPDX-License-Identifier: MIT
 
 /* === Headers files inclusions =============================================================== */
 
-#include "main.h"
 #include "gpio.h"
+#include "hal.h"
+#include <string.h>
+#include <stddef.h>
+#include <stdlib.h>
 
 /* === Macros definitions ====================================================================== */
 
-#define RED_LED_PORT 1
-#define RED_LED_BIT  7
-#define BUTTON_PORT  2
-#define BUTTON_BIT   3
+#ifndef GPIO_MAX_INSTANCES
+#define GPIO_MAX_INSTANCES 10
+#endif
+
+#define USE_DYNAMIC_MEM
 
 /* === Private data type declarations ========================================================== */
 
 /* === Private variable declarations =========================================================== */
+
+struct gpio_s {
+    uint8_t port;
+    uint8_t bit;
+    bool output;
+#ifndef USE_DYNAMIC_MEM
+    bool used;
+#endif
+};
 
 /* === Private function declarations =========================================================== */
 
@@ -55,27 +68,60 @@ SPDX-License-Identifier: MIT
 
 /* === Private function implementation ========================================================= */
 
-/* === Public function implementation ========================================================== */
+#ifndef USE_DYNAMIC_MEM
 
-int main(void) {
-    gpio_t led_rojo;
-    gpio_t button;
+/**
+ * @brief Private function that creates a new GPIO instance using static memory.
+ *
+ * This function allocates a new GPIO object from a pool of statically defined instances.
+ * It searches for an available instance in the pool and marks it as "used".
+ *
+ * @return Pointer to a `gpio_s` structure. Returns `NULL` if no instances are available.
+ */
+static gpio_t allocateInstance() {
+    static struct gpio_s instances[GPIO_MAX_INSTANCES] = {0};
 
-    led_rojo = gpioCreate(RED_LED_PORT, RED_LED_BIT);
-    button = gpioCreate(BUTTON_PORT, BUTTON_BIT);
-
-    gpioSetDirection(led_rojo, true);
-    gpioSetState(led_rojo, false);
-    gpioSetDirection(button, false);
-
-    while (1) {
-        if (gpioGetState(button)) {
-            gpioSetState(led_rojo, true);
-        } else {
-            gpioSetState(led_rojo, false);
+    gpio_t result = NULL;
+    for (int index = 0; index < GPIO_MAX_INSTANCES; index++) {
+        if (!instances[index].used) {
+            result = &instances[index];
+            result->used = true;
+            break;
         }
     }
-    return 0;
+    return result;
+}
+#endif
+
+/* === Public function implementation ========================================================== */
+
+gpio_t gpioCreate(uint8_t port, uint8_t bit) {
+#ifdef USE_DYNAMIC_MEM
+    gpio_t self = malloc(sizeof(struct gpio_s));
+#else
+    gpio_t self = allocateInstance();
+#endif
+    if (self) {
+        self->port = port;
+        self->bit = bit;
+        self->output = false;
+    }
+    return self;
+}
+
+void gpioSetDirection(gpio_t self, bool io) {
+    self->output = io;
+    hal_gpio_set_direction(self->port, self->bit, self->output);
+}
+
+void gpioSetState(gpio_t self, bool state) {
+    if (self->output) {
+        hal_gpio_set_output(self->port, self->bit, state);
+    }
+}
+
+bool gpioGetState(gpio_t self) {
+    return hal_gpio_get_input(self->port, self->bit);
 }
 
 /* === End of documentation ==================================================================== */
