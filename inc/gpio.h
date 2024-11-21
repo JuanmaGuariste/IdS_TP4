@@ -90,7 +90,7 @@ void gpioSetDirection(gpio_t self, bool io);
  * @param self GPIO instance.
  * @param state `true` for high level, `false` for low level.
  */
-void gpioSetState(gpio_t gpio, bool state);
+void gpioSetState(gpio_t self, bool state);
 
 /**
  * @brief Gets the logical state of a GPIO configured as input.
@@ -100,7 +100,7 @@ void gpioSetState(gpio_t gpio, bool state);
  * @param self GPIO instance.
  * @return `true` if the GPIO is at a high level, `false` if it is at a low level.
  */
-bool gpioGetState(gpio_t gpio);
+bool gpioGetState(gpio_t self);
 
 /* === End of documentation ==================================================================== */
 
